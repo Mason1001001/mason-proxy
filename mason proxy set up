@@ -1,0 +1,41 @@
+// masonProxy.js
+
+const express = require('express');
+const axios = require('axios');
+const cors = require('cors');
+
+const app = express();
+const port = 3000;
+
+// Enable CORS for all domains
+app.use(cors());
+
+// Function to fetch Gist data from GitHub
+const fetchGist = async (gistId) => {
+  const url = `https://api.github.com/gists/${gistId}`;
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching Gist:', error);
+    throw new Error('Unable to fetch Gist');
+  }
+};
+
+// Proxy route to get the Gist content
+app.get('/gist/:gistId', async (req, res) => {
+  const { gistId } = req.params;
+  try {
+    const gistData = await fetchGist(gistId);
+
+    // Return Gist content (e.g., files and descriptions)
+    res.json(gistData);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch Gist' });
+  }
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Proxy server listening at http://localhost:${port}`);
+});
